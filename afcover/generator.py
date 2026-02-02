@@ -12,7 +12,7 @@ from datetime import datetime
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from shared.api import edit_image, download_image, prepare_image_urls
+from shared.api import edit_image, download_image, prepare_image_urls, estimate_cost
 from afcover.styles import build_style_prompt, STYLES, get_style_names
 
 
@@ -38,6 +38,10 @@ class AfghanCoverGenerator:
         custom_prompt=None,
         resolution="1K",
         num_variations=1,
+        output_format="png",
+        seed=None,
+        limit_generations=True,
+        dry_run=False,
     ):
         """
         Generate Afghan music cover art.
@@ -49,11 +53,20 @@ class AfghanCoverGenerator:
             style: Style preset name (traditional, modern, fusion, etc.)
             regional: Regional style modifier (kabuli, herati, etc.)
             custom_prompt: Additional custom prompt instructions
-            resolution: Output resolution (1K, 2K, 4K)
+            resolution: Output resolution (1K, 2K, 4K) - 4K costs 2x!
             num_variations: Number of variations to generate (1-4)
+            output_format: "png" (default), "jpeg" (smaller files), "webp"
+            seed: Random seed for reproducibility (optional)
+            limit_generations: Prevent prompt from requesting more images (default True, RECOMMENDED)
+            dry_run: If True, only return cost estimate without generating
         
         Returns:
             dict with generated image paths and metadata
+        
+        Cost:
+            - 1K/2K: $0.15 per image
+            - 4K: $0.30 per image
+            - Total = cost_per_image × num_variations
         """
         
         # Validate inputs
@@ -66,6 +79,19 @@ class AfghanCoverGenerator:
         if num_variations < 1 or num_variations > 4:
             raise ValueError("num_variations must be between 1 and 4")
         
+        # Calculate estimated cost
+        estimated_cost = estimate_cost(num_variations, resolution)
+        
+        # If dry_run, just return cost estimate
+        if dry_run:
+            return {
+                "dry_run": True,
+                "estimated_cost": f"${estimated_cost:.2f}",
+                "num_images": num_variations,
+                "resolution": resolution,
+                "message": f"Would generate {num_variations} image(s) at {resolution} for ${estimated_cost:.2f}"
+            }
+        
         # Build the prompt
         prompt = self._build_prompt(
             style=style,
@@ -75,13 +101,17 @@ class AfghanCoverGenerator:
             custom_prompt=custom_prompt,
         )
         
-        # Call the API
+        # Call the API with all cost-control parameters
         result = edit_image(
             prompt=prompt,
             image_urls=reference_images,
             resolution=resolution,
             aspect_ratio="1:1",  # Album covers are square
             num_images=num_variations,
+            output_format=output_format,
+            seed=seed,
+            limit_generations=limit_generations,  # Prevent prompt injection
+            enable_web_search=False,  # Not needed, saves potential costs
         )
         
         # Download and save images
@@ -179,6 +209,10 @@ def generate_cover(
     custom_prompt=None,
     resolution="1K",
     num_variations=1,
+    output_format="png",
+    seed=None,
+    limit_generations=True,
+    dry_run=False,
     output_dir=".",
 ):
     """
@@ -191,12 +225,18 @@ def generate_cover(
         style: Style preset (traditional, modern, fusion, romantic, folk, ghazal)
         regional: Regional modifier (kabuli, herati, kandahari, mazari, panjshiri)
         custom_prompt: Additional instructions
-        resolution: 1K, 2K, or 4K
-        num_variations: 1-4
+        resolution: 1K (default), 2K, or 4K (costs 2x)
+        num_variations: 1-4 (each costs $0.15 or $0.30 for 4K)
+        output_format: png (default), jpeg (smaller), webp
+        seed: Random seed for reproducibility
+        limit_generations: Prevent prompt from requesting extra images (default True)
+        dry_run: Only return cost estimate, don't generate
         output_dir: Where to save outputs
     
     Returns:
         dict with results
+    
+    Cost: $0.15/image (1K/2K), $0.30/image (4K)
     """
     generator = AfghanCoverGenerator(output_dir=output_dir)
     return generator.generate(
@@ -208,4 +248,8 @@ def generate_cover(
         custom_prompt=custom_prompt,
         resolution=resolution,
         num_variations=num_variations,
+        output_format=output_format,
+        seed=seed,
+        limit_generations=limit_generations,
+        dry_run=dry_run,
     )

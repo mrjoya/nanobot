@@ -1,5 +1,16 @@
 """
 Shared fal.ai API utilities for NanoBot tools.
+
+COST REFERENCE (as of 2026):
+- Base cost: $0.15 per image
+- 4K resolution: 2x cost ($0.30 per image)
+- num_images: Multiplied by base cost
+
+COST CONTROL TIPS:
+- Use 1K resolution for drafts/testing
+- Use limit_generations=True to prevent prompt injection
+- Generate 1 image first, then variations if needed
+- Use jpeg format for smaller file sizes (no cost difference)
 """
 
 import json
@@ -16,6 +27,27 @@ ENDPOINTS = {
     "text_to_image": "https://queue.fal.run/fal-ai/nano-banana-pro",
     "image_to_image": "https://queue.fal.run/fal-ai/nano-banana-pro/edit",
 }
+
+# Cost constants
+COST_PER_IMAGE = 0.15  # Base cost in USD
+COST_4K_MULTIPLIER = 2.0  # 4K costs 2x
+
+
+def estimate_cost(num_images=1, resolution="1K"):
+    """
+    Estimate the cost for a generation request.
+    
+    Args:
+        num_images: Number of images to generate (1-4)
+        resolution: "1K", "2K", or "4K"
+    
+    Returns:
+        Estimated cost in USD
+    """
+    base = COST_PER_IMAGE * num_images
+    if resolution == "4K":
+        base *= COST_4K_MULTIPLIER
+    return base
 
 
 def load_api_key():
@@ -101,20 +133,85 @@ def download_image(url, output_path):
     return str(output_path)
 
 
-def generate_image(prompt, resolution="1K", aspect_ratio="1:1", num_images=1):
-    """Generate images from text prompt."""
+def generate_image(
+    prompt,
+    resolution="1K",
+    aspect_ratio="1:1",
+    num_images=1,
+    output_format="png",
+    seed=None,
+    limit_generations=True,
+    enable_web_search=False,
+    sync_mode=False,
+):
+    """
+    Generate images from text prompt.
+    
+    Args:
+        prompt: Text description for image generation
+        resolution: "1K" (default, cheapest), "2K", or "4K" (2x cost)
+        aspect_ratio: Image ratio (default "1:1" for album covers)
+        num_images: Number to generate (1-4, each costs $0.15)
+        output_format: "png" (default), "jpeg", or "webp"
+        seed: Random seed for reproducibility (optional)
+        limit_generations: If True, ignore prompt instructions for multiple images (RECOMMENDED for cost control)
+        enable_web_search: Allow model to search web (default False)
+        sync_mode: Return as data URI instead of URL (default False)
+    
+    Returns:
+        API response with generated images
+    
+    Cost: $0.15/image (1K/2K), $0.30/image (4K)
+    """
     payload = {
         "prompt": prompt,
         "aspect_ratio": aspect_ratio,
         "resolution": resolution,
         "num_images": num_images,
-        "output_format": "png"
+        "output_format": output_format,
+        "limit_generations": limit_generations,
+        "enable_web_search": enable_web_search,
+        "sync_mode": sync_mode,
     }
+    
+    if seed is not None:
+        payload["seed"] = seed
+    
     return call_api(ENDPOINTS["text_to_image"], payload)
 
 
-def edit_image(prompt, image_urls, resolution="1K", aspect_ratio="auto", num_images=1):
-    """Edit images using reference images and a prompt."""
+def edit_image(
+    prompt,
+    image_urls,
+    resolution="1K",
+    aspect_ratio="auto",
+    num_images=1,
+    output_format="png",
+    seed=None,
+    limit_generations=True,
+    enable_web_search=False,
+    sync_mode=False,
+):
+    """
+    Edit/transform images using reference images and a prompt.
+    
+    Args:
+        prompt: Instructions for editing/transformation
+        image_urls: List of reference image paths/URLs (up to 14)
+        resolution: "1K" (default, cheapest), "2K", or "4K" (2x cost)
+        aspect_ratio: "auto" (keeps original) or specific ratio
+        num_images: Number of variations (1-4, each costs $0.15)
+        output_format: "png" (default), "jpeg", or "webp"
+        seed: Random seed for reproducibility (optional)
+        limit_generations: If True, ignore prompt instructions for multiple images (RECOMMENDED)
+        enable_web_search: Allow model to search web (default False)
+        sync_mode: Return as data URI instead of URL (default False)
+    
+    Returns:
+        API response with edited images
+    
+    Cost: $0.15/image (1K/2K), $0.30/image (4K)
+    """
     # Ensure image_urls are properly formatted
     prepared_urls = prepare_image_urls(image_urls) if image_urls else []
     
@@ -124,6 +221,27 @@ def edit_image(prompt, image_urls, resolution="1K", aspect_ratio="auto", num_ima
         "aspect_ratio": aspect_ratio,
         "resolution": resolution,
         "num_images": num_images,
-        "output_format": "png"
+        "output_format": output_format,
+        "limit_generations": limit_generations,
+        "enable_web_search": enable_web_search,
+        "sync_mode": sync_mode,
     }
+    
+    if seed is not None:
+        payload["seed"] = seed
+    
     return call_api(ENDPOINTS["image_to_image"], payload)
+
+
+# Convenience function to show cost before generating
+def preview_cost(num_images=1, resolution="1K"):
+    """
+    Print estimated cost for a generation.
+    
+    Usage:
+        preview_cost(num_images=4, resolution="2K")
+        # Output: Estimated cost: $0.60 (4 images at 2K)
+    """
+    cost = estimate_cost(num_images, resolution)
+    print(f"Estimated cost: ${cost:.2f} ({num_images} image(s) at {resolution})")
+    return cost

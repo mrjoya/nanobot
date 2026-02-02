@@ -95,6 +95,18 @@ Regional Modifiers:
         help="Number of variations to generate (1-4)"
     )
     parser.add_argument(
+        "--format",
+        dest="output_format",
+        default="png",
+        choices=["png", "jpeg", "webp"],
+        help="Output format (default: png, jpeg for smaller files)"
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        help="Random seed for reproducibility"
+    )
+    parser.add_argument(
         "--output-dir", "-o",
         default=".",
         help="Output directory"
@@ -103,6 +115,18 @@ Regional Modifiers:
         "--json",
         action="store_true",
         help="Output results as JSON"
+    )
+    
+    # Cost control arguments
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Show cost estimate without generating"
+    )
+    parser.add_argument(
+        "--no-limit",
+        action="store_true",
+        help="Disable generation limit (allows prompt to request more images - NOT RECOMMENDED)"
     )
     
     # Info arguments
@@ -166,16 +190,24 @@ Regional Modifiers:
             custom_prompt=args.custom,
             resolution=args.resolution,
             num_variations=args.num,
+            output_format=args.output_format,
+            seed=args.seed,
+            limit_generations=not args.no_limit,
+            dry_run=args.dry_run,
             output_dir=args.output_dir,
         )
         
         if args.json:
             print(json.dumps(result, indent=2))
+        elif args.dry_run:
+            print(f"\n💰 Cost Estimate: {result['estimated_cost']}")
+            print(f"   {result['message']}")
+            print("\n   Remove --dry-run to generate.")
         else:
             print("✅ Generation complete!\n")
             for img in result["images"]:
                 print(f"   📀 {img}")
-            print(f"\n💰 Estimated cost: {result['cost']}")
+            print(f"\n💰 Cost: {result['cost']}")
     
     except Exception as e:
         if args.json:

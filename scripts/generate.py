@@ -12,6 +12,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 from pathlib import Path
+from dotenv import load_dotenv
 
 FAL_API_URL = "https://queue.fal.run/fal-ai/nano-banana-pro"
 
@@ -159,10 +160,15 @@ Examples:
         print(prompt)
         return
     
+    # Load environment variables from .env file
+    env_file = Path(__file__).parent.parent / '.env'
+    load_dotenv(env_file)
+    
     # Get API key
     api_key = os.environ.get("FAL_KEY")
     if not api_key:
-        print("Error: FAL_KEY environment variable not set", file=sys.stderr)
+        print("Error: FAL_KEY not found", file=sys.stderr)
+        print("Please create a .env file with your API key (see .env.example)", file=sys.stderr)
         print("Get your key at: https://fal.ai/dashboard/keys", file=sys.stderr)
         sys.exit(1)
     

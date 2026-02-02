@@ -20,14 +20,26 @@ NanoBot is an AI-powered music cover art generator and editor using Google's Nan
 
 - Python 3.6+
 - fal.ai API key
+- Python dependencies:
+  ```bash
+  pip install -r requirements.txt
+  ```
 
 ## Setup
 
+### API Key Setup
+
 1. Get a fal.ai API key at https://fal.ai/dashboard/keys
-2. Export your key:
-```bash
-export FAL_KEY="your-key-here"
-```
+2. Copy the example environment file:
+   ```bash
+   cp .env.example .env
+   ```
+3. Edit the `.env` file and replace `your_api_key_here` with your actual API key
+   ```
+   FAL_KEY=your_actual_api_key_from_fal.ai
+   ```
+
+Note: `.env` is in the `.gitignore` file, so your API key won't be committed to the repository.
 
 ## Usage
 

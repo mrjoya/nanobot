@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from afcover.generator import generate_cover
 from afcover.styles import get_style_names, get_regional_names, describe_style, STYLES
+from afcover.library import list_references, get_artist_references, get_style_references
 
 
 def main():
@@ -34,6 +35,11 @@ Examples:
   
   # Custom prompt additions
   %(prog)s --ref cover.jpg --title "Ghazal" --style ghazal --custom "include poetry verses in background"
+  
+  # Using reference library
+  %(prog)s --artist-ref "Ahmad Zahir" --title "New Release" --style traditional
+  %(prog)s --style-ref "modern" --title "Summer Hit" --artist "Aryana"
+  %(prog)s --list-references   # Show all available references in the library
 
 Available Styles:
   traditional  - Classic Afghan with ornate details and gold accents
@@ -136,6 +142,26 @@ Regional Modifiers:
         help="List available styles and exit"
     )
     
+    # Reference Library arguments
+    parser.add_argument(
+        "--use-library",
+        action="store_true",
+        help="Use stored references from the library"
+    )
+    parser.add_argument(
+        "--artist-ref",
+        help="Use references for a specific artist from the library"
+    )
+    parser.add_argument(
+        "--style-ref",
+        help="Use references for a specific style from the library"
+    )
+    parser.add_argument(
+        "--list-references",
+        action="store_true",
+        help="List available references in the library and exit"
+    )
+    
     args = parser.parse_args()
     
     # Handle --list-styles
@@ -150,9 +176,59 @@ Regional Modifiers:
             print(f"  {name:12} - {REGIONAL_STYLES[name]['name']}")
         return
     
+    # Handle --list-references
+    if args.list_references:
+        ref_collections = list_references()
+        
+        print("\nReference Library:\n")
+        
+        if "artists" in ref_collections and ref_collections["artists"]:
+            print("Artists:")
+            for artist, references in ref_collections["artists"].items():
+                count = len(references)
+                print(f"  {artist:15} - {count} reference(s)")
+        else:
+            print("  No artist references found")
+        
+        print()
+        
+        if "styles" in ref_collections and ref_collections["styles"]:
+            print("Styles:")
+            for style, references in ref_collections["styles"].items():
+                count = len(references)
+                print(f"  {style:15} - {count} reference(s)")
+        else:
+            print("  No style references found")
+        
+        return
+    
+    # Handle library references
+    reference_images = args.references or []
+    using_library = False
+    library_source = None
+    
+    if args.use_library or args.artist_ref or args.style_ref:
+        if args.artist_ref:
+            artist_refs = get_artist_references(args.artist_ref)
+            if artist_refs:
+                reference_images.extend(artist_refs)
+                using_library = True
+                library_source = f"artist '{args.artist_ref}'"
+            else:
+                print(f"Warning: No references found for artist: {args.artist_ref}", file=sys.stderr)
+        
+        if args.style_ref:
+            style_refs = get_style_references(args.style_ref)
+            if style_refs:
+                reference_images.extend(style_refs)
+                using_library = True
+                library_source = f"style '{args.style_ref}'"
+            else:
+                print(f"Warning: No references found for style: {args.style_ref}", file=sys.stderr)
+    
     # Validate arguments
-    if not args.references:
-        print("Error: At least one reference image is required (--ref)", file=sys.stderr)
+    if not reference_images:
+        print("Error: At least one reference image is required (--ref, --artist-ref, or --style-ref)", file=sys.stderr)
         parser.print_usage()
         sys.exit(1)
     
@@ -161,7 +237,7 @@ Regional Modifiers:
         sys.exit(1)
     
     # Check that reference files exist (for local files)
-    for ref in args.references:
+    for ref in reference_images:
         if not ref.startswith(("http://", "https://", "data:")):
             if not Path(ref).exists():
                 print(f"Error: Reference file not found: {ref}", file=sys.stderr)
@@ -177,12 +253,14 @@ Regional Modifiers:
         print(f"   Style: {args.style}", file=sys.stderr)
         if args.regional:
             print(f"   Regional: {args.regional}", file=sys.stderr)
-        print(f"   References: {len(args.references)} image(s)", file=sys.stderr)
+        print(f"   References: {len(reference_images)} image(s)", file=sys.stderr)
+        if using_library:
+            print(f"   Using library references from {library_source}", file=sys.stderr)
         print(f"   Generating {args.num} variation(s)...\n", file=sys.stderr)
     
     try:
         result = generate_cover(
-            reference_images=args.references,
+            reference_images=reference_images,
             title=args.title,
             artist=args.artist,
             style=args.style,

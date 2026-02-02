@@ -1,12 +1,18 @@
 {
-  "name": "Modern",
+  "name": "modern",
   "type": "styles",
-  "description": "Contemporary Afghan pop style with clean design elements and bold typography",
-  "elements": [
-    "Clean, minimal design",
-    "Bold typography",
-    "Vibrant colors",
-    "Contemporary composition"
-  ],
-  "references": {}
+  "description": "Contemporary pop style, clean and polished",
+  "characteristics": ["sleek", "vibrant", "minimalist", "contemporary", "urban"],
+  "references": {
+    "modern_sample1.jpg": {
+      "file_name": "modern_sample1.jpg",
+      "description": "Contemporary Afghan pop album cover with bold colors",
+      "added_at": 1706847440
+    },
+    "modern_sample2.jpg": {
+      "file_name": "modern_sample2.jpg",
+      "description": "Urban Afghan music with sleek design elements",
+      "added_at": 1706847440
+    }
+  }
 }

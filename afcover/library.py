@@ -9,8 +9,10 @@ consistent style matching across multiple generations.
 import json
 import os
 import shutil
+import zipfile
+import re
 from pathlib import Path
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Optional, Union, Tuple
 
 
 class ReferenceLibrary:
@@ -273,6 +275,225 @@ class ReferenceLibrary:
         
         return references
     
+    def batch_add_references(
+        self,
+        collection_type: str,
+        collection_name: str,
+        image_paths: List[str],
+        metadata: Dict[str, Dict[str, Any]] = None,
+        copy_files: bool = True,
+    ) -> List[str]:
+        """
+        Add multiple reference images to a collection.
+        
+        Args:
+            collection_type: Type of collection ('artists' or 'styles')
+            collection_name: Name of the collection
+            image_paths: List of paths to reference images
+            metadata: Dictionary mapping image paths to their metadata
+            copy_files: If True, copy the files; if False, move them
+        
+        Returns:
+            List of paths to the references in the library
+        """
+        added_references = []
+        metadata = metadata or {}
+        
+        for image_path in image_paths:
+            try:
+                image_metadata = metadata.get(image_path, {})
+                ref_path = self._add_reference(
+                    collection_type=collection_type,
+                    collection_name=collection_name,
+                    image_path=image_path,
+                    metadata=image_metadata,
+                    copy_file=copy_files,
+                )
+                added_references.append(ref_path)
+            except Exception as e:
+                print(f"Error adding reference {image_path}: {e}")
+        
+        return added_references
+    
+    def search_references(
+        self,
+        query: str,
+        collection_type: str = "all",
+        search_metadata: bool = True,
+    ) -> Dict[str, List[str]]:
+        """
+        Search for references matching a query.
+        
+        Args:
+            query: Search query
+            collection_type: Type of collections to search ('artists', 'styles', or 'all')
+            search_metadata: If True, also search in metadata fields
+        
+        Returns:
+            Dictionary with matching references grouped by collection
+        """
+        results = {}
+        collections = {}
+        
+        # Prepare search pattern
+        pattern = re.compile(query, re.IGNORECASE)
+        
+        # Get collections to search
+        if collection_type in ["artists", "all"]:
+            for artist_dir in self.artists_path.iterdir():
+                if artist_dir.is_dir():
+                    collections[f"artists/{artist_dir.name}"] = artist_dir
+        
+        if collection_type in ["styles", "all"]:
+            for style_dir in self.styles_path.iterdir():
+                if style_dir.is_dir():
+                    collections[f"styles/{style_dir.name}"] = style_dir
+        
+        # Search each collection
+        for collection_key, collection_dir in collections.items():
+            collection_results = []
+            
+            # Check filenames
+            for file_path in collection_dir.iterdir():
+                if file_path.is_file() and file_path.suffix.lower() in [".jpg", ".jpeg", ".png", ".webp", ".gif"]:
+                    if pattern.search(file_path.name):
+                        collection_results.append(str(file_path.absolute()))
+                        continue
+            
+            # Check metadata if requested
+            if search_metadata:
+                metadata_path = collection_dir / "metadata.json"
+                if metadata_path.exists():
+                    try:
+                        with open(metadata_path, "r") as f:
+                            metadata = json.load(f)
+                        
+                        # Check collection metadata
+                        collection_text = json.dumps(
+                            {k: v for k, v in metadata.items() if k != "references"}
+                        )
+                        if pattern.search(collection_text):
+                            # Add all references if collection metadata matches
+                            for file_path in collection_dir.iterdir():
+                                if file_path.is_file() and file_path.suffix.lower() in [".jpg", ".jpeg", ".png", ".webp", ".gif"]:
+                                    if str(file_path.absolute()) not in collection_results:
+                                        collection_results.append(str(file_path.absolute()))
+                            continue
+                        
+                        # Check individual reference metadata
+                        if "references" in metadata:
+                            for ref_name, ref_metadata in metadata["references"].items():
+                                ref_path = collection_dir / ref_name
+                                if ref_path.exists() and pattern.search(json.dumps(ref_metadata)):
+                                    ref_abs_path = str(ref_path.absolute())
+                                    if ref_abs_path not in collection_results:
+                                        collection_results.append(ref_abs_path)
+                    except Exception as e:
+                        print(f"Error searching metadata in {collection_key}: {e}")
+            
+            if collection_results:
+                results[collection_key] = collection_results
+        
+        return results
+    
+    def export_collection(
+        self,
+        collection_type: str,
+        collection_name: str,
+        output_path: str = None,
+    ) -> str:
+        """
+        Export a collection as a zip file.
+        
+        Args:
+            collection_type: Type of collection ('artists' or 'styles')
+            collection_name: Name of the collection
+            output_path: Path to save the zip file (defaults to collection_name.zip)
+        
+        Returns:
+            Path to the exported zip file
+        """
+        # Determine the source directory
+        if collection_type == "artists":
+            collection_dir = self.artists_path / collection_name
+        elif collection_type == "styles":
+            collection_dir = self.styles_path / collection_name
+        else:
+            raise ValueError(f"Unknown collection type: {collection_type}")
+        
+        if not collection_dir.exists():
+            raise FileNotFoundError(f"Collection not found: {collection_type}/{collection_name}")
+        
+        # Determine the output path
+        if output_path is None:
+            output_path = f"{collection_name}.zip"
+        
+        output_path = Path(output_path)
+        
+        # Create the zip file
+        with zipfile.ZipFile(output_path, "w") as zip_file:
+            for file_path in collection_dir.rglob("*"):
+                if file_path.is_file():
+                    zip_file.write(
+                        file_path,
+                        arcname=file_path.relative_to(collection_dir),
+                    )
+        
+        return str(output_path.absolute())
+    
+    def import_collection(
+        self,
+        collection_type: str,
+        collection_name: str,
+        zip_path: str,
+        overwrite: bool = False,
+    ) -> Tuple[int, int]:
+        """
+        Import a collection from a zip file.
+        
+        Args:
+            collection_type: Type of collection ('artists' or 'styles')
+            collection_name: Name of the collection
+            zip_path: Path to the zip file
+            overwrite: If True, overwrite existing files
+        
+        Returns:
+            Tuple of (number of files imported, number of files skipped)
+        """
+        # Determine the target directory
+        if collection_type == "artists":
+            collection_dir = self.artists_path / collection_name
+        elif collection_type == "styles":
+            collection_dir = self.styles_path / collection_name
+        else:
+            raise ValueError(f"Unknown collection type: {collection_type}")
+        
+        # Create the directory if it doesn't exist
+        collection_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Extract the zip file
+        imported = 0
+        skipped = 0
+        
+        with zipfile.ZipFile(zip_path, "r") as zip_file:
+            for file_info in zip_file.infolist():
+                if not file_info.is_dir():
+                    target_path = collection_dir / file_info.filename
+                    
+                    # Create parent directories if needed
+                    target_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    if target_path.exists() and not overwrite:
+                        skipped += 1
+                        continue
+                    
+                    with zip_file.open(file_info) as source, open(target_path, "wb") as target:
+                        shutil.copyfileobj(source, target)
+                    
+                    imported += 1
+        
+        return (imported, skipped)
+    
     def _add_reference(
         self,
         collection_type: str,
@@ -458,4 +679,135 @@ def add_style_reference(
         image_path=image_path,
         metadata=metadata,
         copy_file=copy_file,
+    )
+
+
+def batch_add_artist_references(
+    artist_name: str,
+    image_paths: List[str],
+    metadata: Dict[str, Dict[str, Any]] = None,
+    copy_files: bool = True,
+) -> List[str]:
+    """
+    Add multiple reference images to an artist collection.
+    
+    Args:
+        artist_name: Name of the artist
+        image_paths: List of paths to reference images
+        metadata: Dictionary mapping image paths to their metadata
+        copy_files: If True, copy the files; if False, move them
+    
+    Returns:
+        List of paths to the references in the library
+    """
+    library = ReferenceLibrary()
+    return library.batch_add_references(
+        collection_type="artists",
+        collection_name=artist_name,
+        image_paths=image_paths,
+        metadata=metadata,
+        copy_files=copy_files,
+    )
+
+
+def batch_add_style_references(
+    style_name: str,
+    image_paths: List[str],
+    metadata: Dict[str, Dict[str, Any]] = None,
+    copy_files: bool = True,
+) -> List[str]:
+    """
+    Add multiple reference images to a style collection.
+    
+    Args:
+        style_name: Name of the style
+        image_paths: List of paths to reference images
+        metadata: Dictionary mapping image paths to their metadata
+        copy_files: If True, copy the files; if False, move them
+    
+    Returns:
+        List of paths to the references in the library
+    """
+    library = ReferenceLibrary()
+    return library.batch_add_references(
+        collection_type="styles",
+        collection_name=style_name,
+        image_paths=image_paths,
+        metadata=metadata,
+        copy_files=copy_files,
+    )
+
+
+def search_references(
+    query: str,
+    collection_type: str = "all",
+    search_metadata: bool = True,
+) -> Dict[str, List[str]]:
+    """
+    Search for references matching a query.
+    
+    Args:
+        query: Search query
+        collection_type: Type of collections to search ('artists', 'styles', or 'all')
+        search_metadata: If True, also search in metadata fields
+    
+    Returns:
+        Dictionary with matching references grouped by collection
+    """
+    library = ReferenceLibrary()
+    return library.search_references(
+        query=query,
+        collection_type=collection_type,
+        search_metadata=search_metadata,
+    )
+
+
+def export_collection(
+    collection_type: str,
+    collection_name: str,
+    output_path: str = None,
+) -> str:
+    """
+    Export a collection as a zip file.
+    
+    Args:
+        collection_type: Type of collection ('artists' or 'styles')
+        collection_name: Name of the collection
+        output_path: Path to save the zip file (defaults to collection_name.zip)
+    
+    Returns:
+        Path to the exported zip file
+    """
+    library = ReferenceLibrary()
+    return library.export_collection(
+        collection_type=collection_type,
+        collection_name=collection_name,
+        output_path=output_path,
+    )
+
+
+def import_collection(
+    collection_type: str,
+    collection_name: str,
+    zip_path: str,
+    overwrite: bool = False,
+) -> Tuple[int, int]:
+    """
+    Import a collection from a zip file.
+    
+    Args:
+        collection_type: Type of collection ('artists' or 'styles')
+        collection_name: Name of the collection
+        zip_path: Path to the zip file
+        overwrite: If True, overwrite existing files
+    
+    Returns:
+        Tuple of (number of files imported, number of files skipped)
+    """
+    library = ReferenceLibrary()
+    return library.import_collection(
+        collection_type=collection_type,
+        collection_name=collection_name,
+        zip_path=zip_path,
+        overwrite=overwrite,
     )

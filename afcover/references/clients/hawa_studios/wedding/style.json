@@ -1,0 +1,45 @@
+{
+  "name": "Wedding/Celebration",
+  "description": "Elegant, sophisticated style for wedding music albums and celebration compilations",
+  "visual_elements": {
+    "background": {
+      "type": "luxury floral arrangements, elegant venue settings",
+      "colors": "ivory, cream, white with gold accents",
+      "lighting": "soft, warm lighting with chandeliers or venue elements"
+    },
+    "composition": {
+      "subject_framing": "portrait or duo composition, professional pose",
+      "depth": "venue depth visible, background elements slightly blurred"
+    },
+    "props": {
+      "microphones": "visible, indicating live performance",
+      "instruments": "tabla or other traditional instruments when applicable"
+    }
+  },
+  "typography": {
+    "title": {
+      "style": "massive, bold, all-caps white sans-serif",
+      "position": "bottom third",
+      "color": "bright white"
+    },
+    "artist_name": {
+      "style": "copper/bronze medium-weight sans-serif",
+      "position": "above title, smaller size",
+      "color": "gold/bronze gradient"
+    },
+    "supporting_text": {
+      "style": "thinner weight, sans-serif",
+      "position": "under main text elements",
+      "color": "white"
+    }
+  },
+  "color_palette": {
+    "primary": ["white", "#FFFFFF"],
+    "secondary": ["ivory", "#FFFFF0"],
+    "accent": ["gold gradient", "#D4AF37", "#BF9B30"]
+  },
+  "mood": "sophisticated, celebratory, premium event",
+  "example_image": "/home/ec2-user/.openclaw/media/inbound/file_15---a46d978d-85d2-45c2-b366-ec0ac7bfdd63.jpg",
+  "reference_titles": ["LIVE WEDDING MIX", "Volume I"],
+  "reference_artists": ["Omar Sharif with Wais Ulfat on Tabla"]
+}

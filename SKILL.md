@@ -1,127 +1,336 @@
 ---
-name: cover-art
-description: Generate and edit professional music album/single cover art using AI (Nano Banana Pro via fal.ai). Invoke when user requests album artwork, cover art editing, single covers, EP artwork, playlist covers, or music-related visual assets. Supports text-to-image generation with genre presets, image-to-image editing, custom text placement, artist imagery, and logo integration. Cost: $0.15/image.
+name: afcover
+description: |
+  Generate professional Afghan music album cover art using AI (Nano Banana Pro via fal.ai).
+  Specializes in culturally authentic Afghan aesthetics with 11 style presets and 8 regional variations.
+  
+  ⚠️ COST CONTROL: All commands default to cost estimate mode.
+     User must explicitly confirm before any charges occur.
+     Daily limit: $5.00
+  
+  TRIGGER PHRASES:
+  - "Afghan cover art", "Afghan album cover", "Afghan music cover"
+  - "cover for [Dari/Pashto song title]"
+  - Artist names: Ahmad Zahir, Aryana Sayeed, Farhad Darya, etc.
+  - Styles: traditional, ghazal, sufi, folk, modern, fusion, hiphop
+  - Regional: Kabuli, Herati, Kandahari, Mazari, Panjshiri
+  - Occasions: Nowruz, Eid, wedding
+  
+  REQUIRES: Reference images (artist photos, style examples)
+  COST: $0.15/image (1K/2K), $0.30/image (4K)
 ---
 
-# Cover Art Generator & Editor
+# Afghan Music Cover Art Generator (afcover)
 
-Generate and edit album covers via fal.ai's Nano Banana Pro (Gemini 3 Pro Image).
+Generate professional, culturally authentic Afghan music album covers using reference images and AI.
 
-## Quick Start
+## ⚠️ CRITICAL: Cost Control
+
+**ALL generation commands default to DRY-RUN mode (cost estimate only).**
+
+1. **First call**: Always shows cost estimate, NO CHARGE
+2. **User confirms**: Only then add `--confirm` flag
+3. **Daily limit**: $5.00/day enforced automatically
 
 ```bash
-python scripts/generate.py \
-  --title "Album Title" \
-  --artist "Artist Name" \
-  --genre synthwave
+# Step 1: Get cost estimate (DEFAULT - FREE, no API call)
+python3 -m afcover.bot generate \
+    --prompt "Traditional cover for 'Laili'" \
+    --images photo.jpg
+
+# Step 2: ONLY after user confirms, add --confirm (COSTS MONEY)
+python3 -m afcover.bot generate \
+    --prompt "Traditional cover for 'Laili'" \
+    --images photo.jpg \
+    --confirm
+
+# Check daily usage
+python3 -m afcover.bot usage
 ```
 
-## Parameters
+## Workflow (Two-Step Confirmation)
 
-| Param | Required | Description |
-|-------|----------|-------------|
-| `--title` | Yes | Album/single title (rendered on cover) |
-| `--artist` | Yes | Artist name |
-| `--genre` | No | Style preset: synthwave, hip-hop, metal, jazz, electronic, indie, pop, classical, r&b, rock, lo-fi, ambient |
-| `--style` | No | Custom style override (e.g., "cyberpunk cityscape, rain") |
-| `--colors` | No | Color palette (e.g., "purple, cyan, magenta") |
-| `--logo` | No | Logo description to include |
-| `--subject` | No | Main visual subject/imagery |
-| `--resolution` | No | 1K (default), 2K, or 4K ($0.30) |
-| `--num` | No | Number of variations (default: 1) |
-| `--output` | No | Output file path |
+1. **User uploads reference images** (artist photos, style examples, existing covers)
+2. **User describes desired cover** in natural language
+3. **STEP 1 - Cost Estimate** (FREE):
+   ```bash
+   python3 -m afcover.bot generate --prompt "..." --images img.jpg
+   ```
+   → Returns cost estimate, style preview, daily usage
+4. **Show estimate to user and ASK FOR CONFIRMATION**
+5. **STEP 2 - Generate** (COSTS MONEY, only after user confirms):
+   ```bash
+   python3 -m afcover.bot generate --prompt "..." --images img.jpg --confirm
+   ```
+6. **Return the generated cover(s)** to the user
 
-## Workflow
+## Commands
 
-1. Parse user request for title, artist, genre, style cues
-2. Run `scripts/generate.py` with extracted parameters
-3. Script composes prompt, calls fal.ai, downloads image
-4. Return image path to user
+### Parse Request (FREE)
+Analyze a natural language request to see extracted parameters:
+```bash
+python3 -m afcover.bot parse "Make a romantic cover for 'Dilbar' by Aryana Sayeed with mountain backdrop"
+```
 
-## Genre Presets
+### Generate Cover (Two-Step)
+```bash
+# STEP 1: Get cost estimate (DEFAULT - FREE)
+python3 -m afcover.bot generate \
+    --prompt "PROMPT_TEXT" \
+    --images IMAGE1 [IMAGE2 ...]
 
-See `references/genres.md` for full visual breakdown. Quick reference:
+# STEP 2: Actually generate (COSTS MONEY - requires --confirm)
+python3 -m afcover.bot generate \
+    --prompt "PROMPT_TEXT" \
+    --images IMAGE1 [IMAGE2 ...] \
+    --output OUTPUT_DIR \
+    --confirm \
+    [--json]
+```
 
-- **synthwave**: Neon, retro-futuristic, purple/cyan
-- **hip-hop**: Urban, bold typography, gold accents
-- **metal**: Dark, gothic, distressed type
-- **jazz**: Sophisticated, warm tones, elegant
-- **lo-fi**: Anime aesthetic, cozy, warm pastels
-- **electronic**: Abstract geometry, vibrant
-- **indie**: Minimalist, muted, artistic
+### Check Usage (FREE)
+```bash
+python3 -m afcover.bot usage
+python3 -m afcover.bot usage --json
+```
+
+### List Styles
+Show available style presets:
+```bash
+python -m afcover.bot styles
+python -m afcover.bot styles --type regional
+python -m afcover.bot styles --type occasions
+```
+
+### Manage Library
+Work with reference image collections:
+```bash
+# List collections
+python -m afcover.bot library list
+
+# Add reference to artist collection
+python -m afcover.bot library add --type artist --name "Ahmad Zahir" --image photo.jpg
+
+# Add reference to style collection
+python -m afcover.bot library add --type style --name "traditional" --image example.jpg
+```
+
+## Style Presets
+
+| Style | Description | Best For |
+|-------|-------------|----------|
+| `traditional` | Classic Afghan, ornate borders, gold details, Nastaliq calligraphy | Classical, folk, established artists |
+| `modern` | Contemporary pop, clean design, bold typography | Pop releases, mainstream |
+| `fusion` | East-West blend, bilingual, sophisticated | Diaspora audience, international |
+| `romantic` | Soft, emotional, roses, gold tones | Love songs, ballads |
+| `folk` | Rustic, earthy, mountain landscapes | Folk music, regional |
+| `ghazal` | Poetic, literary, ink wash aesthetic | Ghazal, classical vocals |
+| `sufi` | Mystical, spiritual, sacred geometry | Devotional, spiritual |
+| `wedding` | Festive, colorful, Attan dance | Wedding songs, celebrations |
+| `patriotic` | Afghan flag colors, national symbols | Homeland songs |
+| `hiphop` | Urban, graffiti-inspired, bold | Afghan rap, hip-hop |
+| `acoustic` | Warm, intimate, wooden textures | Unplugged, intimate |
+
+## Regional Modifiers
+
+Add regional character to any style:
+
+| Region | Character |
+|--------|-----------|
+| `kabuli` | Urban, cosmopolitan, modern Kabul |
+| `herati` | Artistic, Persian influence, Timurid heritage |
+| `kandahari` | Bold Pashtun aesthetic, strong |
+| `mazari` | Colorful, Turkic, Nowruz vibes |
+| `panjshiri` | Mountain majesty, emerald valleys |
+| `badakhshi` | High mountain, lapis lazuli colors |
+| `hazaragi` | Bamiyan heritage, turquoise |
+| `nuristani` | Forest mountain, carved wood |
+
+## Occasion Themes
+
+| Occasion | Theme |
+|----------|-------|
+| `nowruz` | Spring renewal, Haft Mewa, tulips |
+| `eid` | Festive, crescent moon, celebration |
+| `independence` | National pride, Afghan flag |
+| `winter` | Snow-capped peaks, warm interiors |
+
+## Example Conversation Flows
+
+### Basic Request (Two-Step Confirmation)
+```
+User: Make me a cover for "Laili Laili" by Ahmad Zahir
+[User uploads: artist_photo.jpg]
+
+Agent: I'll prepare a traditional Afghan cover for "Laili Laili" by Ahmad Zahir.
+       Let me get a cost estimate first...
+
+[STEP 1 - Runs without --confirm (FREE):
+python3 -m afcover.bot generate \
+    --prompt "Traditional Afghan cover for 'Laili Laili' by Ahmad Zahir" \
+    --images /path/to/artist_photo.jpg]
+
+Agent: 📊 **Cost Estimate** (no charge yet)
+       
+       🎵 Title: "Laili Laili"
+       👤 Artist: Ahmad Zahir
+       🎨 Style: traditional
+       📐 Resolution: 1K
+       🖼️ Images: 1
+       
+       💰 **Estimated cost: $0.15**
+       
+       📈 Today: $0.00 spent, $5.00 remaining
+       
+       Would you like me to generate this cover?
+
+User: Yes, go ahead!
+
+[STEP 2 - Runs with --confirm (COSTS MONEY):
+python3 -m afcover.bot generate \
+    --prompt "Traditional Afghan cover for 'Laili Laili' by Ahmad Zahir" \
+    --images /path/to/artist_photo.jpg \
+    --output /workspace/output \
+    --confirm]
+
+Agent: ✅ Generated Afghan Cover Art
+       🎵 "Laili Laili" by Ahmad Zahir
+       🎨 Style: Traditional Afghan (کلاسیک افغانی)
+       📀 /workspace/output/afcover-ahmad-zahir-laili-laili-traditional-20260202-143022.png
+       💰 Cost: $0.15
+
+[Returns image to user]
+```
+
+### Multiple Variations (Cost-Aware)
+```
+User: Generate 3 variations of a romantic cover for "Dilbar" by Aryana Sayeed
+[User uploads: artist_photo.jpg]
+
+[STEP 1 - Cost estimate:
+python3 -m afcover.bot generate \
+    --prompt "3 variations romantic cover for 'Dilbar' by Aryana Sayeed" \
+    --images artist_photo.jpg]
+
+Agent: 📊 **Cost Estimate** (no charge yet)
+       
+       🎵 Title: "Dilbar"
+       👤 Artist: Aryana Sayeed
+       🎨 Style: romantic
+       🖼️ Images: 3 variations
+       
+       💰 **Estimated cost: $0.45** (3 × $0.15)
+       
+       📈 Today: $0.15 spent, $4.85 remaining
+       
+       Generate 3 variations for $0.45?
+
+User: That's fine, proceed.
+
+[STEP 2 - With --confirm]
+```
+
+### Check Usage/Limits
+```
+User: How much have I spent today on covers?
+
+[Runs: python3 -m afcover.bot usage]
+
+Agent: 📊 **Daily Usage**
+       Date: 2026-02-02
+       Generations: 2
+       Images created: 4
+       Spent today: $0.60
+       Remaining: $4.40
+       Daily limit: $5.00
+```
+
+### Limit Reached
+```
+User: Make another cover for "Watan"
+[User uploads: photo.jpg]
+
+[STEP 1 - Cost estimate]
+
+Agent: 📊 **Cost Estimate**: $0.15
+       
+       ⚠️ **Warning**: You've spent $4.95 today. 
+       This would exceed your daily limit of $5.00.
+       
+       Please wait until tomorrow or contact support to increase limits.
+```
+
+## File Handling
+
+### Accepting User Images
+When user uploads images via messaging:
+1. Images are saved to a temporary path (e.g., `/tmp/upload_123.jpg`)
+2. Pass these paths to the `--images` parameter
+3. Generated images go to `--output` directory
+
+### Returning Results
+The generated image path is returned in the result. Send this file back to the user via the messaging channel.
 
 ## Environment
 
 Requires `FAL_KEY` environment variable with fal.ai API key.
+Location: `/home/ec2-user/.openclaw/workspace/nanobot/.env`
 
-## Example Invocations
+## Cost Control (Critical)
 
-**Simple:**
-```bash
-python scripts/generate.py --title "Neon Dreams" --artist "Synthwave Kid" --genre synthwave
+⚠️ **NEVER call generate with --confirm without user approval**
+
+| Rule | Implementation |
+|------|----------------|
+| Default to dry-run | All `generate` commands without `--confirm` are FREE |
+| Require confirmation | Only add `--confirm` after user explicitly approves |
+| Daily limit | $5.00/day enforced automatically |
+| Check usage | Use `python3 -m afcover.bot usage` to see spending |
+| Resolution | Default 1K ($0.15), 4K costs 2x ($0.30) |
+| Variations | Each variation costs per-image rate |
+
+### Cost Reference
+- 1K/2K resolution: **$0.15/image**
+- 4K resolution: **$0.30/image**
+- Daily limit: **$5.00**
+
+### Workflow Checklist
+1. ☐ Run `generate` without `--confirm` → shows estimate
+2. ☐ Show estimate to user with cost
+3. ☐ Wait for explicit user confirmation
+4. ☐ Only then run with `--confirm`
+5. ☐ Check `usage` if approaching limit
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Reference images required" | User must upload at least one image |
+| "FAL_KEY not found" | Check .env file exists with valid API key |
+| "Unknown style" | Use `python -m afcover.bot styles` to see valid options |
+| Generation fails | Check API key balance at fal.ai dashboard |
+
+## Technical Details
+
+- **API**: fal.ai Nano Banana Pro (Gemini 3 Pro Image)
+- **Output Format**: PNG (default), JPEG, WebP
+- **Aspect Ratio**: 1:1 (album cover standard)
+- **Max Images**: 4 variations per request
+- **Timeout**: 120 seconds per generation
+
+## File Locations
+
 ```
-
-**Custom style:**
-```bash
-python scripts/generate.py \
-  --title "Lost in Tokyo" \
-  --artist "Lofi Beats" \
-  --genre lo-fi \
-  --style "anime girl studying at desk, rainy window, warm lamp light" \
-  --colors "soft pink, warm orange, cream"
+nanobot/
+├── SKILL.md                    # This file
+├── afcover/
+│   ├── bot.py                  # OpenClaw interface
+│   ├── generator.py            # Core generation logic
+│   ├── styles.py               # Style definitions
+│   ├── library.py              # Reference image library
+│   └── references/             # Stored reference collections
+│       ├── artists/            # Artist-specific references
+│       └── styles/             # Style example references
+└── shared/
+    └── api.py                  # fal.ai API utilities
 ```
-
-**Multiple variations:**
-```bash
-python scripts/generate.py --title "Velocity" --artist "Speed Demon" --genre electronic --num 4
-```
-
-## Image Editing
-
-Edit existing album covers or images with powerful AI:
-
-```bash
-python scripts/edit.py \
-  --prompt "Make it more vibrant and add neon accents" \
-  --image album.jpg
-```
-
-### Edit Parameters
-
-| Param | Required | Description |
-|-------|----------|-------------|
-| `--prompt` | Yes | Editing instructions |
-| `--image` | Yes | Input image to edit (can use multiple times) |
-| `--aspect-ratio` | No | Output aspect ratio (default: auto) |
-| `--resolution` | No | 1K (default), 2K, or 4K ($0.30) |
-| `--output` | No | Output file path |
-| `--num` | No | Number of variations (default: 1) |
-
-### Edit Examples
-
-**Simple edit:**
-```bash
-python scripts/edit.py --prompt "Add a vintage filter and grain" --image cover.jpg
-```
-
-**Specific modifications:**
-```bash
-python scripts/edit.py \
-  --prompt "Replace background with cosmic space scene, keep artist and text intact" \
-  --image cover.jpg \
-  --resolution 2K
-```
-
-**Edit multiple images:**
-```bash
-python scripts/edit.py \
-  --prompt "Apply consistent dark moody aesthetic to all covers" \
-  --image cover1.jpg \
-  --image cover2.jpg \
-  --image cover3.jpg
-```
-
-## Cost
-
-- 1K/2K: $0.15/image
-- 4K: $0.30/image

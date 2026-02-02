@@ -1,0 +1,55 @@
+{
+  "name": "Modern/Contemporary",
+  "description": "Bold, contemporary style for modern Afghan pop music releases and remixes",
+  "variants": ["minimalist", "vibrant"],
+  "visual_elements": {
+    "background": {
+      "type": "geometric patterns, circular mandalas, or minimalist gradients",
+      "colors": "varies - vibrant oranges and golds or monochromatic with accent",
+      "lighting": "dynamic lighting effects, radial glows, shadow play"
+    },
+    "composition": {
+      "subject_framing": "dynamic poses, engaged expression, direct eye contact",
+      "depth": "visual layering with patterns or typography"
+    },
+    "effects": {
+      "overlays": "transparent text overlays, light effects",
+      "accents": "single color accent on monochrome backgrounds"
+    }
+  },
+  "typography": {
+    "title": {
+      "style": "mix of sans-serif with script elements for Dari/Pashto words",
+      "position": "bottom third or integrated with design",
+      "color": "white or vibrant accent color (orange, gold)"
+    },
+    "artist_name": {
+      "style": "bold, wide-spaced sans-serif or oversized overlay",
+      "position": "varied - can be integrated with design",
+      "color": "white or accent"
+    },
+    "supporting_text": {
+      "style": "clean structured sans-serif",
+      "position": "below main text, smaller",
+      "color": "white or light neutral"
+    }
+  },
+  "color_palette": {
+    "primary": ["white", "#FFFFFF"],
+    "accent_options": [
+      ["orange", "#FF7F50"],
+      ["gold", "#FFD700"]
+    ],
+    "background_options": [
+      ["gradient gold/orange", "#FFD700", "#FFA500"],
+      ["monochrome", "#222222", "#DDDDDD"]
+    ]
+  },
+  "mood": "energetic, contemporary, artistic",
+  "example_images": [
+    "/home/ec2-user/.openclaw/media/inbound/file_20---da0b2ed0-be01-43ae-8216-fec281d22ed1.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_19---6729a7fc-2152-4442-88ae-989d259eedeb.jpg"
+  ],
+  "reference_titles": ["Herati REMIX 2026", "Majlisi"],
+  "reference_artists": ["Tawab Jawed", "Duran Shewaki"]
+}

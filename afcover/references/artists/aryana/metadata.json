@@ -1,0 +1,19 @@
+{
+  "name": "Aryana",
+  "type": "artists",
+  "description": "Contemporary female Afghan vocalist representing modern Afghan music",
+  "years_active": "2000-present",
+  "genres": ["pop", "fusion", "contemporary"],
+  "references": {
+    "aryana_sample1.jpg": {
+      "file_name": "aryana_sample1.jpg",
+      "description": "Modern Aryana album cover with purple tones",
+      "added_at": 1706847480
+    },
+    "aryana_sample2.jpg": {
+      "file_name": "aryana_sample2.jpg",
+      "description": "Contemporary album design for Aryana's music",
+      "added_at": 1706847480
+    }
+  }
+}

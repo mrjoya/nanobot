@@ -4,5 +4,16 @@
   "description": "Known as the 'Elvis of Afghanistan', Ahmad Zahir was one of the most iconic singers in Afghan music history",
   "years_active": "1967-1979",
   "genres": ["ghazal", "pop", "folk"],
-  "references": {}
+  "references": {
+    "ahmad_zahir_sample1.jpg": {
+      "file_name": "ahmad_zahir_sample1.jpg",
+      "description": "Classic Ahmad Zahir album cover from the 1970s",
+      "added_at": 1706847460
+    },
+    "ahmad_zahir_sample2.jpg": {
+      "file_name": "ahmad_zahir_sample2.jpg",
+      "description": "Iconic portrait album cover of Ahmad Zahir",
+      "added_at": 1706847460
+    }
+  }
 }

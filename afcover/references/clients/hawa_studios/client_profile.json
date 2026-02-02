@@ -1,0 +1,55 @@
+{
+  "name": "Hawa Studios",
+  "type": "music_label",
+  "brand_elements": {
+    "header": "HAWA STUDIOS PRESENTS",
+    "header_position": "top",
+    "header_font": "sans-serif, bold, wide-spaced",
+    "header_color": "white",
+    "logo": null
+  },
+  "typography": {
+    "title": {
+      "style": "bold, clean sans-serif",
+      "weight": "heavy",
+      "color": "white",
+      "position": "bottom third or center"
+    },
+    "artist_name": {
+      "style": "medium-weight sans-serif",
+      "color": "white or accent color",
+      "position": "above or below title"
+    },
+    "supporting_text": {
+      "style": "light-weight sans-serif",
+      "color": "white or accent color",
+      "position": "below main text"
+    },
+    "dari_pashto": {
+      "style": "flowing script or Nastaliq",
+      "color": "gold or accent color",
+      "position": "integrated with main title"
+    }
+  },
+  "composition": {
+    "portrait_framing": "shoulders up or waist up",
+    "lighting": "professional studio lighting, soft key light",
+    "backdrop": "contextual to style (floral, stage, textured, or plain)",
+    "artist_position": "centered or slightly off-center",
+    "negative_space": "balanced for text placement"
+  },
+  "color_palette": {
+    "primary": ["white", "#FFFFFF"],
+    "secondary": ["gold", "#D4AF37"],
+    "accent": ["varies by style", null]
+  },
+  "styles": ["wedding", "modern", "traditional", "performance"],
+  "reference_images": [
+    "/home/ec2-user/.openclaw/media/inbound/file_15---a46d978d-85d2-45c2-b366-ec0ac7bfdd63.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_16---4553dedb-bcdb-4a84-8d88-93f8cf6b36df.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_17---ec4c2c21-7d19-4d91-a130-e9f8495f7e14.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_18---633a7014-c43e-4b7b-b71b-b3be5b41654d.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_19---6729a7fc-2152-4442-88ae-989d259eedeb.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_20---da0b2ed0-be01-43ae-8216-fec281d22ed1.jpg"
+  ]
+}

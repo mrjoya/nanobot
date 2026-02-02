@@ -1,12 +1,18 @@
 {
-  "name": "Traditional",
+  "name": "traditional",
   "type": "styles",
-  "description": "Classical Afghan aesthetic with ornate details, gold accents, and traditional patterns",
-  "elements": [
-    "Ornate borders and frames",
-    "Gold and deep jewel tones",
-    "Calligraphic Dari/Pashto text",
-    "Traditional instrument imagery"
-  ],
-  "references": {}
+  "description": "Classic Afghan style with ornate details and gold accents",
+  "characteristics": ["ornate", "gold", "classic", "historical", "elegant"],
+  "references": {
+    "traditional_sample1.jpg": {
+      "file_name": "traditional_sample1.jpg",
+      "description": "Traditional Afghan album cover with ornate gold patterns",
+      "added_at": 1706847420
+    },
+    "traditional_sample2.jpg": {
+      "file_name": "traditional_sample2.jpg",
+      "description": "Historical Afghan music cover with cultural motifs",
+      "added_at": 1706847420
+    }
+  }
 }

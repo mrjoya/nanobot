@@ -16,6 +16,7 @@ from datetime import datetime
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from shared.api import edit_image, download_image, prepare_image_urls, estimate_cost
+from shared.cost_control import safe_api_call, track_cost, cost_confirmation
 from afcover.styles import (
     build_style_prompt, 
     STYLES, 
@@ -215,9 +216,18 @@ class AfghanCoverGenerator:
         )
         
         # Call the API with all cost-control parameters
+        # Make sure reference_images are properly processed
+        prepared_references = []
+        for ref in reference_images:
+            if isinstance(ref, str):
+                prepared_references.append(ref)
+            else:
+                # Handle other types if needed
+                prepared_references.append(str(ref))
+                
         result = edit_image(
             prompt=prompt,
-            image_urls=reference_images,
+            image_urls=prepared_references,
             resolution=resolution,
             aspect_ratio="1:1",  # Album covers are square
             num_images=num_variations,
@@ -229,7 +239,17 @@ class AfghanCoverGenerator:
         
         # Download and save images
         downloaded = []
-        images = result.get("images", [])
+        
+        # Handle both direct and queued response formats
+        if "images" in result:
+            images = result.get("images", [])
+        else:
+            # Log the unexpected response format
+            print(f"Unexpected response format: {result}")
+            # Try to handle queued responses
+            if "status" in result and result["status"] == "IN_QUEUE":
+                print("Request is queued. This should have been handled by the API layer.")
+            images = []
         
         for i, img in enumerate(images):
             url = img.get("url")
@@ -243,8 +263,13 @@ class AfghanCoverGenerator:
                 filename = f"afcover-{safe_artist}-{safe_title}-{style}-{timestamp}{suffix}.png"
                 output_path = self.output_dir / filename
                 
-                download_image(url, output_path)
-                downloaded.append(str(output_path.absolute()))
+                try:
+                    downloaded_path = download_image(url, output_path)
+                    downloaded.append(str(output_path.absolute()))
+                    print(f"Downloaded image to: {downloaded_path}")
+                except Exception as e:
+                    print(f"Error downloading image from {url}: {e}")
+                    # Continue with other images if any
         
         # Calculate actual cost
         cost = 0.15 * len(downloaded)

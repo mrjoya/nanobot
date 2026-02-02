@@ -1,0 +1,53 @@
+{
+  "name": "Traditional Portrait",
+  "description": "Classic, dignified portrait style for established Afghan artists and traditional releases",
+  "visual_elements": {
+    "background": {
+      "type": "subtle floral patterns or plain neutral backgrounds",
+      "colors": "soft neutrals, whites, grays",
+      "lighting": "classic portrait lighting, soft and flattering"
+    },
+    "composition": {
+      "subject_framing": "formal portrait, shoulders up, centered",
+      "depth": "minimal depth, focus on subject"
+    },
+    "wardrobe": {
+      "style": "formal attire, suits (black, tan), ties, professional appearance",
+      "accessories": "sunglasses, subtle jewelry when applicable"
+    }
+  },
+  "typography": {
+    "title": {
+      "style": "bold, clean white sans-serif",
+      "position": "bottom third, center-aligned",
+      "color": "bright white"
+    },
+    "artist_name": {
+      "style": "same font as title but smaller weight",
+      "position": "below title, proportional spacing",
+      "color": "white"
+    },
+    "dari_pashto": {
+      "position": "integrated with title when applicable"
+    }
+  },
+  "color_palette": {
+    "options": [
+      {
+        "name": "warm",
+        "colors": ["tan", "#D2B48C", "cream", "#FFFDD0", "white", "#FFFFFF"]
+      },
+      {
+        "name": "monochrome",
+        "colors": ["black", "#000000", "gray", "#808080", "white", "#FFFFFF"]
+      }
+    ]
+  },
+  "mood": "professional, dignified, established, classic",
+  "example_images": [
+    "/home/ec2-user/.openclaw/media/inbound/file_16---4553dedb-bcdb-4a84-8d88-93f8cf6b36df.jpg",
+    "/home/ec2-user/.openclaw/media/inbound/file_17---ec4c2c21-7d19-4d91-a130-e9f8495f7e14.jpg"
+  ],
+  "reference_titles": ["Tor e Sterge", "Paiwand e Ishq"],
+  "reference_artists": ["Nazir Khara"]
+}

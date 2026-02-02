@@ -19,6 +19,7 @@ import base64
 import mimetypes
 import urllib.request
 import urllib.error
+import time
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -101,8 +102,20 @@ def prepare_image_urls(image_paths):
     return urls
 
 
-def call_api(endpoint, payload, timeout=120):
-    """Make an API call to fal.ai."""
+def call_api(endpoint, payload, timeout=120, max_poll_attempts=30, poll_interval=4):
+    """
+    Make an API call to fal.ai with polling for queue-based responses.
+    
+    Args:
+        endpoint: The API endpoint URL
+        payload: Request payload as dictionary
+        timeout: Single request timeout in seconds
+        max_poll_attempts: Maximum number of status check attempts
+        poll_interval: Wait time between polls in seconds
+        
+    Returns:
+        The completed API response
+    """
     api_key = load_api_key()
     
     headers = {
@@ -114,8 +127,62 @@ def call_api(endpoint, payload, timeout=120):
     req = urllib.request.Request(endpoint, data=data, headers=headers, method='POST')
     
     try:
+        # Initial request submission
         with urllib.request.urlopen(req, timeout=timeout) as response:
-            return json.loads(response.read().decode('utf-8'))
+            initial_response = json.loads(response.read().decode('utf-8'))
+            
+        # Check if the response is already complete
+        if "images" in initial_response:
+            return initial_response
+            
+        # Handle queue-based response
+        if "status" in initial_response and initial_response["status"] == "IN_QUEUE":
+            print(f"Request queued. Waiting for processing...")
+            
+            # Get the status URL for polling
+            status_url = initial_response.get("status_url")
+            if not status_url:
+                raise RuntimeError("Status URL not found in queue response")
+                
+            # Poll for result
+            import time
+            for attempt in range(max_poll_attempts):
+                print(f"Polling attempt {attempt+1}/{max_poll_attempts}...")
+                status_req = urllib.request.Request(status_url, headers=headers, method='GET')
+                
+                try:
+                    with urllib.request.urlopen(status_req, timeout=timeout) as status_response:
+                        status_data = json.loads(status_response.read().decode('utf-8'))
+                        
+                    # Check status
+                    status = status_data.get("status")
+                    if status == "COMPLETED":
+                        # Get the final result
+                        response_url = initial_response.get("response_url")
+                        if not response_url:
+                            raise RuntimeError("Response URL not found in queue response")
+                            
+                        result_req = urllib.request.Request(response_url, headers=headers, method='GET')
+                        with urllib.request.urlopen(result_req, timeout=timeout) as result_response:
+                            return json.loads(result_response.read().decode('utf-8'))
+                            
+                    elif status in ["FAILED", "CANCELED"]:
+                        error_msg = status_data.get("error", f"Request {status.lower()}")
+                        raise RuntimeError(f"API request failed: {error_msg}")
+                        
+                    # Still processing, wait and try again
+                    time.sleep(poll_interval)
+                    
+                except urllib.error.HTTPError as e:
+                    error_body = e.read().decode('utf-8') if e.fp else str(e)
+                    print(f"Polling error: {e.code} - {error_body}")
+                    time.sleep(poll_interval)
+                    
+            raise RuntimeError(f"Timed out waiting for API response after {max_poll_attempts} attempts")
+            
+        # Return whatever we got if not a queue response
+        return initial_response
+        
     except urllib.error.HTTPError as e:
         error_body = e.read().decode('utf-8') if e.fp else str(e)
         raise RuntimeError(f"API Error {e.code}: {error_body}")

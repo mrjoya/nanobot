@@ -1,0 +1,54 @@
+{
+  "name": "Performance/Entertainment",
+  "description": "Theatrical, entertainment-focused style showcasing live performances and stage presence",
+  "visual_elements": {
+    "background": {
+      "type": "performance venue, stage elements, theatrical setting",
+      "colors": "rich purples, blacks, with colored stage lighting",
+      "lighting": "dramatic stage lighting, colored gels, theatrical effects"
+    },
+    "composition": {
+      "subject_framing": "performance pose, dynamic interaction",
+      "depth": "stage backdrop visible, venue context"
+    },
+    "props": {
+      "microphones": "vintage-style or performance microphones",
+      "stage_elements": "visible stage design elements, textured backdrops"
+    },
+    "additional_subjects": {
+      "dancers": "sometimes included in composition",
+      "performers": "can include multiple performers in staged settings"
+    }
+  },
+  "typography": {
+    "title": {
+      "style": "large display font with mixed sizes, sometimes with script elements",
+      "position": "bottom third, prominent",
+      "color": "white with possible accent elements"
+    },
+    "artist_name": {
+      "style": "clean white sans-serif",
+      "position": "upper text area, above title",
+      "color": "white"
+    },
+    "secondary_text": {
+      "style": "flowing script or stylized font",
+      "position": "integrated with main title",
+      "color": "complementary to main color scheme"
+    }
+  },
+  "color_palette": {
+    "primary": ["purple", "#800080"],
+    "secondary": ["black", "#000000"],
+    "accents": ["pink", "#FFC0CB", "gold", "#FFD700"]
+  },
+  "lighting_effects": {
+    "stage_lights": "visible colored light sources",
+    "gels": "purple, pink, amber gels on lights",
+    "atmosphere": "sometimes includes haze/smoke elements"
+  },
+  "mood": "entertaining, theatrical, performance-focused, retro-influenced",
+  "example_image": "/home/ec2-user/.openclaw/media/inbound/file_18---633a7014-c43e-4b7b-b71b-b3be5b41654d.jpg",
+  "reference_titles": ["Dukhtar Herati"],
+  "reference_artists": ["Waheed Soroor"]
+}
